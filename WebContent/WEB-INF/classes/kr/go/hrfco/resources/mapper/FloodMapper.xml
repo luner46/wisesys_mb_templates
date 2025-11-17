@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FloodMapper">
+	<select id="selectWlobsInfo" parameterType="String" resultType="weakhashmap">
+		SELECT a.wlobscd AS wlobscd
+			 , a.obsnm AS obsnm
+			 , a.lat AS lat
+			 , a.lon AS lon
+			 , a.splat As splat
+			 , a.splon As splon
+			 , a.spzoom As spzoom
+			 , a.spyn As spyn
+			 , a.rvcd AS rvcd
+			 , (SELECT coalesce(max(b.rvnm), '') FROM hss.rvif b WHERE b.rvcd = a.rvcd LIMIT 1) AS rvnm
+			 , (SELECT array_to_string(array_agg(d.addtnm),', ') FROM hss.wfldarea c, hss.rptaddtif d WHERE c.wlobscd = a.wlobscd AND c.addtcd = d.addtcd) AS addtnm
+		  FROM (SELECT coalesce(max(wlobscd), '-999') AS wlobscd
+					 , coalesce(max(obsnm), '') AS obsnm
+					 , coalesce(max(lat), '-999') AS lat
+					 , coalesce(max(lon), '-999') AS lon
+					 , coalesce(max(sp_lat), '-999') AS splat
+					 , coalesce(max(sp_lon), '-999') AS splon
+					 , coalesce(max(sp_zoom), '-999') AS spzoom
+					 , coalesce(max(rvcd), '-999') AS rvcd
+					 , coalesce(max(sp_yn), '-999') AS spyn
+		          FROM hss.wlobsif WHERE wlobscd = #{param}
+		        ) a
+	</select>
+	
+	
+</mapper>

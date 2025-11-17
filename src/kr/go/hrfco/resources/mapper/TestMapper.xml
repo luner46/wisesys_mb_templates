@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TestMapper">
+	<select id="selectWlobsInfo" parameterType="String" resultType="weakhashmap">
+		SELECT a.wlobscd AS wlobscd
+			 , a.obsnm AS obsnm
+			 , a.lat AS lat
+			 , a.lon AS lon
+			 , a.rvcd AS rvcd
+			 , (SELECT coalesce(max(b.rvnm), '') FROM hss.rvif b WHERE b.rvcd = a.rvcd LIMIT 1) AS rvnm
+			 , (SELECT coalesce(max(d.addtnm), '') FROM hss.wfldarea c, hss.rptaddtif d WHERE c.wlobscd = a.wlobscd AND c.addtcd = d.addtcd LIMIT 1) AS addtnm
+		  FROM (SELECT coalesce(max(wlobscd), '-999') AS wlobscd
+					 , coalesce(max(obsnm), '') AS obsnm
+					 , coalesce(max(lat), '-999') AS lat
+					 , coalesce(max(lon), '-999') AS lon
+					 , coalesce(max(rvcd), '-999') AS rvcd
+		          FROM hss.wlobsif WHERE wlobscd = #{param}
+		        ) a
+	</select>
+	
+	<select id="selectWlobs" parameterType="hashmap" resultType="hashmap">
+		SELECT wlobscd, obsnm, lon, lat FROM hss.wlobsif order by wlobscd
+	</select>
+	
+	<select id="findWlobs" parameterType="String" resultType="hashmap">
+		SELECT a.wlobscd as wlobscd
+		     , b.addtcd as addtcd
+		     , c.addtnm as addtnm
+		     , (SELECT sp_lat FROM hss.wlobsif WHERE wlobscd = #{param}) AS splat
+		     , (SELECT sp_lon FROM hss.wlobsif WHERE wlobscd = #{param}) AS splon
+		  FROM hss.wlobsif a, hss.wfldarea b, hss.rptaddtif c 
+		 WHERE 1=1
+		   and a.wlobscd = b.wlobscd AND b.addtcd = c.addtcd and a.wlobscd = #{param}
+	</select>
+	
+	
+</mapper>
